@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/gonvenience/bunt"
 	"github.com/gonvenience/neat"
@@ -68,17 +67,19 @@ window including all terminal colors and text decorations.
 
 		var buf bytes.Buffer
 
-		// Prepend command line arguments to output content
-		if includeCommand, err := cmd.Flags().GetBool("show-cmd"); err == nil && includeCommand {
-			bunt.Fprintf(&buf, "Lime{➜} DimGray{%s}\n", strings.Join(args, " "))
-		}
+		for _, arg := range args {
+			// Prepend command line arguments to output content
+			if includeCommand, err := cmd.Flags().GetBool("show-cmd"); err == nil && includeCommand {
+				bunt.Fprintf(&buf, "Lime{➜} DimGray{%s}\n", arg)
+			}
 
-		bytes, runErr := ptexec.RunCommandInPseudoTerminal(args[0], args[1:]...)
-		if runErr != nil {
-			return runErr
-		}
+			bytes, runErr := ptexec.RunCommandInPseudoTerminal(arg)
+			if runErr != nil {
+				return runErr
+			}
 
-		buf.Write(bytes)
+			buf.Write(bytes)
+		}
 
 		// Allow manual override of command output content
 		if edit, err := cmd.Flags().GetBool("edit"); err == nil && edit {
